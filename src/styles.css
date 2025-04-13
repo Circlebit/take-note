@@ -1,1 +1,11 @@
 @import "tailwindcss";
+
+@layer base {
+  body {
+    @apply text-amber-400 bg-stone-800 font-mono m-4
+  }
+
+  button {
+    @apply border-2 p-2 
+  }
+}

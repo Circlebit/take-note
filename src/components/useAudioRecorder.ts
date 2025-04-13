@@ -2,13 +2,13 @@
 import { useEffect, useRef, useState } from "react";
 
 /**
- * Custom hook for handling audio recording functionality
+ * Custom hook for handling audio recording functionality with multiple clips
  * @returns Recording state and control functions
  */
 export function useAudioRecorder() {
   // State for UI feedback (causes re-renders when changed)
   const [isRecording, setIsRecording] = useState<boolean>(false);
-  const [audioUrl, setAudioUrl] = useState<string>("");
+  const [audioUrls, setAudioUrls] = useState<string[]>([]);
 
   // Refs for recording resources (don't cause re-renders when changed)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -24,11 +24,11 @@ export function useAudioRecorder() {
       }
 
       // Release memory allocated for audio URLs
-      if (audioUrl) {
-        URL.revokeObjectURL(audioUrl);
-      }
+      audioUrls.forEach((url) => {
+        URL.revokeObjectURL(url);
+      });
     };
-  }, [audioUrl]); // Only re-run if audioUrl changes
+  }, [audioUrls]);
 
   /**
    * Starts the audio recording process
@@ -61,7 +61,9 @@ export function useAudioRecorder() {
 
         // Create a URL for the audio blob
         const url = URL.createObjectURL(audioBlob);
-        setAudioUrl(url);
+
+        // Use functional update to avoid stale closure problems
+        setAudioUrls((prevUrls) => [...prevUrls, url]);
       };
 
       // Save recorder reference and start recording
@@ -91,11 +93,37 @@ export function useAudioRecorder() {
     setIsRecording(false);
   };
 
+  /**
+   * Removes a recorded audio clip and frees its resources
+   */
+  const removeAudioClip = (index: number): void => {
+    if (index < 0 || index >= audioUrls.length) return;
+
+    // Revoke the URL to free memory
+    URL.revokeObjectURL(audioUrls[index]);
+
+    // Update state with the clip removed
+    setAudioUrls((prevUrls) => prevUrls.filter((_, i) => i !== index));
+  };
+
+  /**
+   * Clears all recorded audio clips and frees resources
+   */
+  const clearRecordings = (): void => {
+    // Revoke all URLs to free memory
+    audioUrls.forEach((url) => URL.revokeObjectURL(url));
+
+    // Clear the array
+    setAudioUrls([]);
+  };
+
   // Return the state and functions that components will use
   return {
     isRecording,
-    audioUrl,
+    audioUrls,
     startRecording,
     stopRecording,
+    removeAudioClip,
+    clearRecordings,
   };
 }

@@ -56,7 +56,7 @@ export function useAudioRecorder() {
       recorder.onstop = (): void => {
         // Combine all audio chunks into a single blob
         const audioBlob = new Blob(audioChunksRef.current, {
-          type: "audio/webm",
+          type: "audio/mp3",
         });
 
         // Create a URL for the audio blob
@@ -121,6 +121,7 @@ export function useAudioRecorder() {
   return {
     isRecording,
     audioUrls,
+    setAudioUrls,
     startRecording,
     stopRecording,
     removeAudioClip,

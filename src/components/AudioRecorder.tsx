@@ -1,8 +1,14 @@
+import { AudioClip } from "./AudioClip.tsx";
 import { useAudioRecorder } from "./useAudioRecorder.ts";
 
 export function AudioRecorder() {
-  const { isRecording, audioUrls, startRecording, stopRecording } =
-    useAudioRecorder();
+  const {
+    isRecording,
+    audioUrls,
+    setAudioUrls,
+    startRecording,
+    stopRecording,
+  } = useAudioRecorder();
 
   return (
     <div>
@@ -18,9 +24,16 @@ export function AudioRecorder() {
       {audioUrls.length > 0 && (
         <div>
           {audioUrls.map((url, index) => (
-            <div key={index}>
-              <audio src={url} controls />
-            </div>
+            <AudioClip
+              key={index}
+              src={url}
+              onDelete={() => {
+                const newAudioUrls = [...audioUrls];
+                newAudioUrls.splice(index, 1);
+                // Assuming your hook has a setAudioUrls function
+                setAudioUrls(newAudioUrls);
+              }}
+            />
           ))}
         </div>
       )}

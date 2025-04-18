@@ -1,13 +1,15 @@
 export interface Clip {
   id: string;
   audio: ClipAudio;
-  transcription?: ClipTranscription;
+  transcript?: ClipTranscript;
 }
 
 export interface ClipAudio {
   url: string;
 }
 
-export interface ClipTranscription {
+export interface ClipTranscript {
   text: string;
+  status: "idle" | "pending" | "success" | "error";
+  error?: string;
 }

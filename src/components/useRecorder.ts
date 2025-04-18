@@ -1,13 +1,13 @@
 // useAudioRecorder.ts
 import { useEffect, useRef, useState } from "react";
-import { useAppContext } from "../components/AppContext.tsx";
+import { useAppContext } from "./AppContext.tsx";
 import { Clip } from "../lib/Clip.ts";
 
 /**
  * Custom hook for handling audio recording functionality
  */
-export function useAudioRecorder() {
-  const { addClip } = useAppContext();
+export function useRecorder() {
+  const { addClip, transcribeClip } = useAppContext();
   const [isRecording, setIsRecording] = useState<boolean>(false);
 
   // Refs for recording resources
@@ -60,10 +60,12 @@ export function useAudioRecorder() {
           audio: {
             url,
           },
-          transcription: undefined,
+          transcript: undefined,
         };
 
         addClip(newClip);
+
+        transcribeClip(newClip.id)
       };
 
       mediaRecorderRef.current = recorder;

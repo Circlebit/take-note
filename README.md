@@ -2,7 +2,6 @@
 
 An experimental automatic note-taking app built upon deno, vite and react.
 
-
 ## Development
 
 Start the development server:

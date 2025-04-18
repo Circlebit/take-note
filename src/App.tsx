@@ -1,10 +1,13 @@
 import { AudioRecorder } from "./components/AudioRecorder.tsx";
+import { AppProvider } from "./components/AppContext.tsx";
 
-function App () {
+function App() {
   return (
-    <div>
-      <AudioRecorder />
-    </div>
+    <>
+      <AppProvider>
+        <AudioRecorder />
+      </AppProvider>
+    </>
   );
 }
 

@@ -1,10 +1,11 @@
 export interface Clip {
+  id: string;
   audio: ClipAudio;
-  transcription: ClipTranscription;
+  transcription?: ClipTranscription;
 }
 
 export interface ClipAudio {
-  audioUrl: URL;
+  url: string;
 }
 
 export interface ClipTranscription {

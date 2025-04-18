@@ -1,34 +1,29 @@
 // useAudioRecorder.ts
 import { useEffect, useRef, useState } from "react";
+import { useAppContext } from "../components/AppContext.tsx";
+import { Clip } from "../lib/Clip.ts";
 
 /**
- * Custom hook for handling audio recording functionality with multiple clips
- * @returns Recording state and control functions
+ * Custom hook for handling audio recording functionality
  */
 export function useAudioRecorder() {
-  // State for UI feedback (causes re-renders when changed)
+  const { addClip } = useAppContext();
   const [isRecording, setIsRecording] = useState<boolean>(false);
-  const [audioUrls, setAudioUrls] = useState<string[]>([]);
 
-  // Refs for recording resources (don't cause re-renders when changed)
+  // Refs for recording resources
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioStreamRef = useRef<MediaStream | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
 
-  // Cleanup function that runs on unmount
+  // Cleanup function
   useEffect(() => {
     return () => {
       // Stop all audio tracks when the component unmounts
       if (audioStreamRef.current) {
         audioStreamRef.current.getTracks().forEach((track) => track.stop());
       }
-
-      // Release memory allocated for audio URLs
-      audioUrls.forEach((url) => {
-        URL.revokeObjectURL(url);
-      });
     };
-  }, [audioUrls]);
+  }, []);
 
   /**
    * Starts the audio recording process
@@ -52,21 +47,25 @@ export function useAudioRecorder() {
         }
       };
 
-      // Event handler for when recording stops
       recorder.onstop = (): void => {
-        // Combine all audio chunks into a single blob
         const audioBlob = new Blob(audioChunksRef.current, {
           type: "audio/mp3",
         });
 
-        // Create a URL for the audio blob
         const url = URL.createObjectURL(audioBlob);
 
-        // Use functional update to avoid stale closure problems
-        setAudioUrls((prevUrls) => [...prevUrls, url]);
+        // Create a new clip and add it to the context
+        const newClip: Clip = {
+          id: Date.now().toString(),
+          audio: {
+            url,
+          },
+          transcription: undefined,
+        };
+
+        addClip(newClip);
       };
 
-      // Save recorder reference and start recording
       mediaRecorderRef.current = recorder;
       recorder.start();
       setIsRecording(true);
@@ -81,7 +80,6 @@ export function useAudioRecorder() {
   const stopRecording = (): void => {
     if (!mediaRecorderRef.current || !isRecording) return;
 
-    // Stop the media recorder
     mediaRecorderRef.current.stop();
 
     // Stop all tracks to release the microphone
@@ -89,42 +87,12 @@ export function useAudioRecorder() {
       audioStreamRef.current.getTracks().forEach((track) => track.stop());
     }
 
-    // Update recording state
     setIsRecording(false);
   };
 
-  /**
-   * Removes a recorded audio clip and frees its resources
-   */
-  const removeAudioClip = (index: number): void => {
-    if (index < 0 || index >= audioUrls.length) return;
-
-    // Revoke the URL to free memory
-    URL.revokeObjectURL(audioUrls[index]);
-
-    // Update state with the clip removed
-    setAudioUrls((prevUrls) => prevUrls.filter((_, i) => i !== index));
-  };
-
-  /**
-   * Clears all recorded audio clips and frees resources
-   */
-  const clearRecordings = (): void => {
-    // Revoke all URLs to free memory
-    audioUrls.forEach((url) => URL.revokeObjectURL(url));
-
-    // Clear the array
-    setAudioUrls([]);
-  };
-
-  // Return the state and functions that components will use
   return {
     isRecording,
-    audioUrls,
-    setAudioUrls,
     startRecording,
     stopRecording,
-    removeAudioClip,
-    clearRecordings,
   };
 }

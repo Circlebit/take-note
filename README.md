@@ -11,4 +11,4 @@ Start the development server:
 deno task dev
 ```
 
-Visit `http://localhost:5173` to see the app.
+Visit `http://localhost:3000` to see the app.

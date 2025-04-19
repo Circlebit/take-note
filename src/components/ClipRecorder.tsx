@@ -1,7 +1,7 @@
 import { ClipAudio } from "./ClipAudio.tsx";
 import { useRecorder } from "./useRecorder.ts";
 import { useAppContext } from "./AppContext.tsx";
-import { ClipTranscript } from "./ClipTranscript.tsx";
+import { ClipTranscriptDisplay } from "./ClipTranscriptDisplay.tsx";
 
 export function ClipRecorder() {
   const { isRecording, startRecording, stopRecording } = useRecorder();
@@ -53,7 +53,7 @@ export function ClipRecorder() {
                       ✕
                     </button>
                   </div>
-                  <ClipTranscript clip={clip} />
+                  <ClipTranscriptDisplay clip={clip} />
                 </div>
               ))}
             </div>

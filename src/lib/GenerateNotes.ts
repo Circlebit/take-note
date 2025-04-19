@@ -14,6 +14,8 @@ export async function generateNotesFromTranscripts(
     .map((transcript) => `${transcript.text}`)
     .join("\n\n ---- \n\n");
 
+  //TODO send existing notes as context so they don't change completely
+
   // Create a prompt for OpenAI
   const prompt = `
         Please create concise, well-organized bullet point notes from the following transcripts:

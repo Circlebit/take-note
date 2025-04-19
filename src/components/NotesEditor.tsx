@@ -24,6 +24,8 @@ export function NotesEditor() {
     generateNotes();
   }, [transcripts, setNotes]);
 
+  //TODO indicator for when it's loading, also for errors
+
   return (
     <div>
       <textarea 

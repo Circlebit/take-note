@@ -9,7 +9,7 @@ export interface ClipAudio {
 }
 
 export interface ClipTranscript {
-  text: string;
+  text?: string;
   status: "idle" | "pending" | "success" | "error";
   error?: string;
 }

@@ -1,4 +1,10 @@
-import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+} from "react";
 import { Clip, ClipTranscript } from "../lib/Clip.ts";
 import { transcribeAudio } from "../lib/Transcribe.ts";
 
@@ -22,6 +28,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setClips((prevClips) => [...prevClips, clip]);
   }, []);
 
+  const updateClip = useCallback((clipId: string, updates: Partial<Clip>) => {
+    setClips((prevClips) =>
+      prevClips.map((clip) =>
+        clip.id === clipId ? { ...clip, ...updates } : clip
+      )
+    );
+  }, []);
+
   const removeClip = useCallback((index: number) => {
     if (index < 0 || index >= clips.length) return;
 
@@ -33,6 +47,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [clips]);
 
   const transcribeClip = useCallback((clipId: string) => {
+    // Mark clip as transcribing
+    updateClip(clipId, { transcript: { status: "pending" } });
+
     setClips((prevClips) => {
       const clip = prevClips.find((clip) => clip.id === clipId);
 
@@ -44,23 +61,19 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       (async () => {
         try {
           const transcriptText = await transcribeAudio(clip.audio.url);
-
-          // Update clips with transcript
-          setClips((clips) =>
-            clips.map((clip) =>
-              clip.id === clipId
-                ? {
-                  ...clip,
-                  transcript: {
-                    text: transcriptText,
-                    status: "success",
-                  },
-                }
-                : clip
-            )
-          );
+          updateClip(clipId, {
+            transcript: {
+              text: transcriptText,
+              status: "success",
+            },
+          });
         } catch (error) {
           console.error("Transcription error:", error);
+          updateClip(clipId, {
+            transcript: {
+              status: "error",
+            },
+          });
         }
       })();
       return prevClips;
@@ -69,10 +82,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const transcripts = useMemo(() => {
     return clips
-      .filter(clip => clip.transcript)
-      .map(clip => ({
+      .filter((clip) => clip.transcript)
+      .map((clip) => ({
         id: clip.id,
-        transcript: clip.transcript!
+        transcript: clip.transcript!,
       }));
   }, [clips]);
 
@@ -85,7 +98,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         transcribeClip,
         notes,
         setNotes,
-        transcripts
+        transcripts,
       }}
     >
       {children}
